@@ -20,6 +20,7 @@ class Game:
         self.x_pos_bg = 0
         self.y_pos_bg = 380
         self.score = 0
+        self.high_score = 0
         self.death_count = 0
 
         self.player = Dinosaur()
@@ -37,6 +38,8 @@ class Game:
     def run(self):
         # Game loop: events - update - draw
         self.playing = True
+        self.score = 0
+        self.game_speed = 20
         self.obstacle_manager.reset_obstacles()
         while self.playing:
             self.events()
@@ -58,6 +61,8 @@ class Game:
         self.score += 1
         if self.score % 100 == 0:
             self.game_speed += 5 
+        if self.score > self.high_score:
+            self.high_score = self.score            
 
     def draw(self):
         self.clock.tick(FPS)
@@ -85,7 +90,7 @@ class Game:
         text_rect.center = (1000, 50)
         self.screen.blit(text, text_rect)
 
-    def handle_events_on_menu(self):
+    def handle_events(self):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 self.playing = False
@@ -93,20 +98,27 @@ class Game:
             elif event.type == pygame.KEYDOWN:
                 self.run()    
 
+    def draw_text(self, text, position):
+        font = pygame.font.Font(FONT_STYLE, 22)
+        text_surface = font.render(text, True, (0, 0, 0))
+        text_rect = text_surface.get_rect()
+        text_rect.center = position
+        self.screen.blit(text_surface, text_rect)
+
     def show_menu(self):
         self.screen.fill((255, 255, 255))
         half_screen_height = SCREEN_HEIGHT // 2
         half_screen_widht = SCREEN_WIDTH // 2
         
         if self.death_count == 0:
-            font = pygame.font.Font(FONT_STYLE, 22)
-            text = font.render("Press any key to start", True, (0, 0, 0))
-            text_rect = text.get_rect()
-            text_rect.center = (half_screen_widht, half_screen_height)
-            self.screen.blit(text, text_rect)  
-        else:
+            self.draw_text("Press any key to start", (half_screen_widht, half_screen_height))
+        else:                       
             self.screen.blit(ICON, (half_screen_widht - 20, half_screen_height - 140))    
-                 
+            self.draw_text("Press any key to restart", (half_screen_widht, half_screen_height))
+            self.draw_text(f"Score: {self.score}", (half_screen_widht, half_screen_height - 200))
+            self.draw_text(f"Death Count: {self.death_count}", (half_screen_widht, half_screen_height - 240))
+            self.draw_text(f"High Score: {self.high_score}", (half_screen_widht, half_screen_height - 170))
+           
         pygame.display.update()
         
-        self.handle_events_on_menu()
+        self.handle_events()
