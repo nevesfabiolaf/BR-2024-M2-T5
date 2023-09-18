@@ -1,16 +1,16 @@
 import pygame
 from pygame.sprite import Sprite
 
-from dino_runner.utils.constants import RUNNING, JUMPING, DUCKING, DEFAULT_TYPE, SHIELD_TYPE, DUCKING_SHIELD, JUMPING_SHIELD, RUNNING_SHIELD
+from dino_runner.utils.constants import RUNNING, JUMPING, DUCKING, DEFAULT_TYPE, SHIELD_TYPE, DUCKING_SHIELD, JUMPING_SHIELD, RUNNING_SHIELD, HAMMER_TYPE, DUCKING_HAMMER, JUMPING_HAMMER, RUNNING_HAMMER, HEART_TYPE, DUCKING_HEART, JUMPING_HEART, RUNNING_HEART, MAX_TYPE, MAX_SPEED, JUMPING_MAX
 
 X_POS = 80
 Y_POS = 310
 Y_POS_DUCK = 345
 JUMP_VEL = 8.5
 
-DUCK_IMG = { DEFAULT_TYPE: DUCKING, SHIELD_TYPE: DUCKING_SHIELD}
-JUMP_IMG = { DEFAULT_TYPE: JUMPING, SHIELD_TYPE: JUMPING_SHIELD}
-RUN_IMG = { DEFAULT_TYPE: RUNNING, SHIELD_TYPE: RUNNING_SHIELD}
+DUCK_IMG = { DEFAULT_TYPE: DUCKING, SHIELD_TYPE: DUCKING_SHIELD, HAMMER_TYPE: DUCKING_HAMMER, HEART_TYPE: DUCKING_HEART, MAX_TYPE: MAX_SPEED}
+JUMP_IMG = { DEFAULT_TYPE: JUMPING, SHIELD_TYPE: JUMPING_SHIELD, HAMMER_TYPE: JUMPING_HAMMER, HEART_TYPE: JUMPING_HEART, MAX_TYPE: JUMPING_MAX}
+RUN_IMG = { DEFAULT_TYPE: RUNNING, SHIELD_TYPE: RUNNING_SHIELD, HAMMER_TYPE: RUNNING_HAMMER, HEART_TYPE: RUNNING_HEART, MAX_TYPE: MAX_SPEED}
 
 
 class Dinosaur(Sprite):
@@ -30,6 +30,9 @@ class Dinosaur(Sprite):
     def setup_state(self):
         self.has_power_up = False
         self.shield = False
+        self.hammer = False
+        self.heart = False
+        self.max = False
         self.show_text = False
         self.power_up_time = 0    
 
@@ -83,6 +86,9 @@ class Dinosaur(Sprite):
         self.dino_rect.y = Y_POS_DUCK
         self.step_index += 1
         self.dino_duck = False
+        
+        if self.type == MAX_TYPE:
+            self.dino_rect.y = Y_POS
 
     def draw(self, screen):
         screen.blit(self.image, (self.dino_rect.x, self.dino_rect.y))

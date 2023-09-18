@@ -1,10 +1,11 @@
 import pygame
 
-from dino_runner.utils.constants import BG, ICON, ICON_2, SCREEN_HEIGHT, SCREEN_WIDTH, TITLE, FPS, DEFAULT_TYPE
+from dino_runner.utils.constants import BG, ICON, START, RESTART, SCREEN_HEIGHT, SCREEN_WIDTH, TITLE, FPS, DEFAULT_TYPE, DEAD, OVER, CLOUD_DEAD
 from dino_runner.utils.text_utils import draw_text
 from dino_runner.components.dinosaur import Dinosaur
 from dino_runner.components.obstacles.obstacle_manager import ObstacleManager
 from dino_runner.components.power_ups.power_up_manager import PowerUpManager
+from dino_runner.components.cloud.cloud import Cloud
 
 
 class Game:
@@ -26,6 +27,7 @@ class Game:
         self.player = Dinosaur()
         self.obstacle_manager = ObstacleManager()
         self.power_up_manager = PowerUpManager()
+        self.cloud = Cloud()
 
     def execute(self):
         self.running = True
@@ -41,8 +43,8 @@ class Game:
         self.playing = True
         self.score = 0
         self.game_speed = 20
-        self.obstacle_manager.reset_obstacles()
         self.power_up_manager.reset_power_ups()
+        self.obstacle_manager.reset_obstacles()
         while self.playing:
             self.events()
             self.update()
@@ -57,13 +59,20 @@ class Game:
         user_input = pygame.key.get_pressed()
         self.player.update(user_input)
         self.obstacle_manager.update(self)
+        self.cloud.update(self.game_speed)
         self.update_score()
-        self.power_up_manager.update(self)
-
+        self.power_up_manager.update(self)      
+         
     def update_score(self):
-        self.score += 1
+        if self.game_speed < 40:
+            self.score += 1
+        elif (self.game_speed > 40) and (self.game_speed < 50):
+            self.score += 10
+        else:
+            self.score += 1
+   
         if self.score % 100 == 0:
-            self.game_speed += 5 
+            self.game_speed += 2
         if self.score > self.high_score:
             self.high_score = self.score            
 
@@ -72,6 +81,8 @@ class Game:
         self.screen.fill((255, 255, 255))
         self.draw_background()
         self.draw_score()
+        self.draw_speed()
+        self.cloud.draw(self.screen)
         self.player.draw(self.screen)
         self.obstacle_manager.draw(self.screen)
         self.power_up_manager.draw(self.screen)
@@ -91,16 +102,25 @@ class Game:
     def draw_score(self):
         draw_text(
             f"Score: {self.score}",
-            self.screen, pos_x_center=1000,
+            self.screen, 
+            pos_x_center=1000,
             pos_y_center=50
         )
+        
+    def draw_speed(self):
+        draw_text(
+            f"Speed: {self.game_speed}",
+            self.screen, 
+            pos_x_center=1000,
+            pos_y_center=68
+        )    
 
     def draw_power_up_time(self):
         if self.player.has_power_up:
             time_to_show = round((self.player.power_up_time - pygame.time.get_ticks()) / 1000, 2)
             if time_to_show >= 0:
                 draw_text(
-                    f"{self.player.type.capitalize()} enable for {time_to_show} seconds",
+                    f"{self.player.type} enable for {time_to_show} seconds",
                     self.screen,
                     font_size = 18,
                     pos_x_center = 500,
@@ -129,30 +149,37 @@ class Game:
                 self.screen,
                 pos_y_center=half_screen_height + 100
             )
-            self.screen.blit(ICON_2, (half_screen_widht - 50, half_screen_height - 50))
+            self.screen.blit(START, (half_screen_widht - 50, half_screen_height - 50))
         else:                       
             draw_text(
                 "Press any key to restart",
                 self.screen,
-                pos_y_center=half_screen_height + 100
+                pos_y_center=half_screen_height + 50
             )
             draw_text(
                 f"Your Score: {self.score}",
                 self.screen,
-                pos_y_center=half_screen_height - 130
+                pos_x_center=1000,
+                pos_y_center=50
             )
             draw_text(
                 f"Death Count: {self.death_count}",
                 self.screen,
-                pos_y_center=half_screen_height - 160
+                pos_x_center=1000,
+                pos_y_center=89
             )
             draw_text(
                 f"High Score: {self.high_score}",
                 self.screen,
-                pos_y_center=half_screen_height - 100
+                pos_x_center=1000,
+                pos_y_center=69
             )
-            self.screen.blit(ICON, (half_screen_widht - 50, half_screen_height - 50))
-           
+            self.screen.blit(RESTART, (half_screen_widht - 50, half_screen_height - 50))
+            self.screen.blit(OVER, (half_screen_widht - 200, half_screen_height - 100))
+            self.screen.blit(DEAD, (80, 310))
+            self.screen.blit(CLOUD_DEAD, (145, 350))
+            self.screen.blit(CLOUD_DEAD, (30, 400))
+
         pygame.display.update()
         
         self.handle_events()
